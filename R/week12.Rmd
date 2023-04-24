@@ -157,7 +157,7 @@ lda_gammas <- tidy(lda_results, matrix= "gamma") %>%
   mutate(doc_id = as.numeric(doc_id))
 ```
 
-#Creating topics tbl (Not done)
+#Creating topics tbl
 ```{r}
 doc_id <-c(1:nrow(week12_tbl))
 original <- week12_tbl$title

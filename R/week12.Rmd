@@ -25,10 +25,10 @@ library(RWeka)
 #reading in reddit data using RedditExtractoR which allows you to search for subreddit (IOPsychology). Added sort by "new" because that will make sure within the last year rather than selecting "hot"
 ```{r data_import_and_cleaning}
 # foundthreads <- find_thread_urls(
-  subreddit = "IOPsychology",
-  sort_by = "new",
-  period = "year"
-)
+ # subreddit = "IOPsychology",
+ # sort_by = "new",
+#  period = "year"
+# )
 
 # urls_content <-get_thread_content(foundthreads$url)
 
@@ -44,7 +44,7 @@ library(RWeka)
 week12_tbl <- read.csv("../data/week12.csv")
 ```
   
-#NLP - preprocessing # come back because need to install java
+#NLP - preprocessing
 ```{r NLP_preprocessing}
 #Creating io_corpus_original
 io_corpus_original <- VCorpus(VectorSource(week12_tbl$title))

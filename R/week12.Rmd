@@ -65,9 +65,10 @@ tm_map(content_transformer(str_to_lower))%>%
 tm_map(removeNumbers) %>%
 #removing punctuation
 tm_map(removePunctuation) %>%
+#removing white space
 tm_map(stripWhitespace) %>%
 tm_map(stemDocument, language = "english") %>%
-#removing words with IO psychology
+#removing words with IO psychology, did not remove words specifically referring to "pscyhology" or "psych" because directions only mentioned to remove referenes to IO psychology and variaitons of the term, I thought including "psychology" and variations of that term was not the same and could also prove beneficial for sorting topics that might mention connections from IO to other subfields of psychology specifically for individuals who might have a background in Quantitative Psychology that might be looking to find a career or learn more about IO psychology specifically.
 tm_map(removeWords, c(stopwords("en"), "io psychology", "i o psychology", "iopsychology", "io", "i o", "riopsychology"))
 ```      
 
@@ -84,7 +85,7 @@ compare_them(io_corpus_original, io_corpus)
 
 ##Analysis
 
-#creating Bigram DTM following week 12 powerpoint  (Done)
+#creating Bigram DTM following week 12 powerpoint and io_slim dtm
 ```{r Bigram DTM}
 myTokenizer <- function(x) {
   NGramTokenizer(x,
@@ -96,7 +97,7 @@ tokenize = myTokenizer
 io_slim_dtm <- removeSparseTerms(io_dtm, 0.996)
 ```
 
-#Tuning an LDA model (topic extraction) (Done)
+#Tuning an LDA model (topic extraction)
 #will not run, R session terminates with a fatal error when including "Griffiths2004" model so removed in order to complete assignment questions
 ```{r lda}
 local_cluster <- makeCluster(7)
@@ -200,4 +201,4 @@ wordcounts <-colSums(iowordcloud_tbl)
 wordnames <- names(iowordcloud_tbl)
 wordcloud(wordnames, wordcounts, max.words = 20, scale = c(2, 0.25))
 ```
-#The wordcloud seems to suggest that the most used used words include work, research and job. These are expected results considering the topic lists generated as well as the overall state of the field of IO psychology, many people are interested in finding work within the field of IO and research is an important part of many of the different jobs and activities of IO psychologists.  
+#The wordcloud seems to suggest that the most used used words include work, research and job. These are expected results considering the topic lists generated as well as the overall state of the field of IO psychology, many people are interested in finding work within the field of IO and research is an important part of many of the different jobs and activities of IO psychologists. Additionally, the topic of "psycholog" which seems to be a variation of psychology is one of biggest topics. This makes sense as this is a set of reddit posts for IO psychologists. As indicated earlier in document I did not remove variations of the word psychology because it was not specifically a reference to "IO psychology" as suggested in the directions. 

@@ -1,0 +1,156 @@
+---
+title: "PSY 8960 Week 12"
+author: "Annie Griebie"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Script Settings and Resources
+```{r script_settings_and_resources}
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+library(tidyverse)
+library(doParallel)
+library(wordcloud)
+library(tm)
+library(tidytext)
+library(ldatuning)
+library(topicmodels)
+library(textstem)
+library(RedditExtractoR)
+library(qdap)
+library(RWeka)
+```
+
+## Data Import and Cleaning
+#reading in reddit data using RedditExtractoR which allows you to search for subreddit (IOPsychology). Added sort by "new" because that will make sure within the last year rather than selecting "hot"
+```{r data_import_and_cleaning}
+# foundthreads <- find_thread_urls(
+  subreddit = "IOPsychology",
+  sort_by = "new",
+  period = "year"
+)
+
+# urls_content <-get_thread_content(foundthreads$url)
+
+# title <- urls_content$threads$title
+# upvotes <- urls_content$threads$upvotes
+#creating tibble with title and upvotes
+# week12_tbl <- tibble(title, upvotes)
+#adding code to save data files instead of downloading again 
+# write_csv(week12_tbl, file = "../data/week12.csv")
+```
+
+```{r data_import_and_cleaning}
+week12_tbl <- read.csv("../data/week12.csv")
+```
+  
+#NLP - preprocessing # come back because need to install java
+```{r NLP_preprocessing}
+#Creating io_corpus_original
+io_corpus_original <- VCorpus(VectorSource(week12_tbl$title))
+```
+
+```{r NLP_preprocessing}
+#Creating new lemmatized pre-processed corpus
+io_corpus <- io_corpus_original %>%
+#removing dashes 
+tm_map(content_transformer(str_replace_all), pattern = "-|/", replacement = "")%>%
+#removing abbreviations
+tm_map(content_transformer(replace_abbreviation))%>%
+#removing contractions
+tm_map(content_transformer(replace_contraction))%>%
+#removing 
+tm_map(content_transformer(str_to_lower))%>%
+#removing numbers
+tm_map(removeNumbers) %>%
+#removing punctuation
+tm_map(removePunctuation) %>%
+tm_map(stripWhitespace) %>%
+tm_map(stemDocument, language = "english") %>%
+#removing words with IO psychology
+tm_map(removeWords, c(stopwords("en"), "io psychology", "i o psychology", "iopsychology", "io", "i o", "riopsychology"))
+```      
+
+#creating function compare_them
+```{r}
+compare_them <- function (corpus1, corpus2) {
+  row <- sample(1:length(corpus1),1)
+  output <- list(corpus1[[row]]$content, corpus2[[row]]$content)
+  return(output)
+}
+
+compare_them(io_corpus_original, io_corpus)
+```
+
+##Analysis
+
+#creating Bigram DTM following week 12 powerpoint  (Done)
+```{r Bigram DTM}
+myTokenizer <- function(x) {
+  NGramTokenizer(x,
+Weka_control(min=1, max=2))}
+io_dtm <-DocumentTermMatrix(io_corpus,
+control = list(
+tokenize = myTokenizer
+))
+```
+
+#Tuning an LDA model (topic extraction) (Done)
+
+```{r}
+library(topicmodels)
+library(ldatuning)
+library(Rmpfr)
+```
+
+
+#will not run, R session terminates with a fatal error
+```{r lda}
+local_cluster <- makeCluster(7)
+registerDoParallel(local_cluster)
+```
+```{r lda}
+tuning<- FindTopicsNumber(
+  io_dtm,
+  topics = seq(2, 15, 1),
+  metrics = c("Griffiths2004",
+              "CaoJuan2009",
+              "Arun2010",
+              "Deveaud2014"),
+  verbose =T
+)
+FindTopicsNumber_plot(tuning)
+```
+```{r lda}
+stopCluster(local_cluster)
+registerDoSEQ
+```
+
+#LDA with 9 topics
+```{r}
+lda_results <- LDA(io_dtm, 9)
+
+lda_betas <-tidy(lda_results, matrix="beta") %>%
+  group_by(topic) %>%
+  top_n(10, beta) %>%
+  arrange(topic, -beta)
+
+lda_gammas <- tidy(lda_results, matrix= "gamma") %>%
+  group_by(document) %>%
+  top_n(1, gamma) %>%
+  mutate(doc_id =as.numeric(document),
+         probability = gamma,
+         original = text) %>%
+  arrange(document)
+```
+
+#Creating topics tbl (Not done)
+```{r}
+doc_id <-c(1:nrow(week12_tbl))
+original <- week12_tbl$title
+original_tbl <- tibble(doc_id, original)
+topics_tbl <- original_tbl %>%
+  left_join(lda_gammas, by = "doc_id"
+) %>%
+  select(doc_id, original, topic, probability)
+```

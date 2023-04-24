@@ -194,6 +194,7 @@ summary(upvotes_topic)
 #The results of this anova suggest that there was not a significant difference between the group mean number of upvotes across topics (p>0.05).
 
 ##Visualization
+
 #creating a wordcloud of io_dtm 
 ```{r visualization_wordcloud}
 iowordcloud_tbl <- as_tibble(as.matrix(io_dtm))

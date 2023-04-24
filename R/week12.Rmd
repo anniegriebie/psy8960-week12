@@ -69,7 +69,7 @@ tm_map(removePunctuation) %>%
 tm_map(stripWhitespace) %>%
 tm_map(stemDocument, language = "english") %>%
 #removing words with IO psychology, did not remove words specifically referring to "pscyhology" or "psych" because directions only mentioned to remove referenes to IO psychology and variaitons of the term, I thought including "psychology" and variations of that term was not the same and could also prove beneficial for sorting topics that might mention connections from IO to other subfields of psychology specifically for individuals who might have a background in Quantitative Psychology that might be looking to find a career or learn more about IO psychology specifically.
-tm_map(removeWords, c(stopwords("en"), "io psychology", "i o psychology", "iopsychology", "io", "i o", "riopsychology"))
+tm_map(removeWords, c(stopwords("en"), "io psychology", "i o psychology", "iopsychology", "io", "i o", "riopsycholog", "riopsychology"))
 ```      
 
 #creating function compare_them
@@ -113,8 +113,9 @@ tuning<- FindTopicsNumber(
   verbose =T
 )
 FindTopicsNumber_plot(tuning)
+
 stopCluster(local_cluster)
-registerDoSEQ
+registerDoSEQ ()
 ```
 ## This is the correct LDA model with the "Griffiths2004" metric included, only included as a comment because with it included will create fatal error in R session. 
 #{r lda}
@@ -170,10 +171,9 @@ topics_tbl <- original_tbl %>%
 ```
 #Question1: What topics do the final topic lists map onto based on the beta matrix
 #Answer 1:
-#1 topic 1 seems to be capturing posts discussing work within IO psychology. 
-#2. topic 2 seems to be capturing posts discussing careers in IO pschology.
-#3. topic 3 seems to be capturing posts discussing psychology as a whole.
-
+#1. topic 1 seems to be capturing posts discussing the topic of psychology. This term was retained within the NLP preprocessing stage because it was not specifically a reference to IO psychology or a variation of IO which was the specific directions and I thought it made sense to retain as it could be offering reference to other subfields of psychology, specifically like Quantitative psychology.
+#2. topic 2 seems to be capturing posts having to do with thinking or contemplating a topic, this also makes sense as those within the field of IO psychology are typically doing research within either an academic or applied setting and thus this reddit forum can serve as a place for those within the field to exchange "thoughts" on different topics and exchange ideas. 
+#3. topic 3 seems to be centered around work. This similarly makes sense, especially right now in the late spring as many graudate students are likely still looking for summer work and internships and those who are graduating may still be looking for more full time jobs. 
 
 #Question2: Look at the orginal text of documents with the highest and lowest probabilities assigned to each document. Do your topic names derived from your interpretation of the beta matrix conceptually match with the content of the original posts? What kind of validity evidence does your answer to this question represent?
 #Answer 2: The topic names derived from my interpretation of hte beta matrix seem to loosely conceptually match with the content of the original posts, though there is not a perfect match. I think the kind of validity evidence my answer to this question represents is content validity. Namely the topics are each a grouping of a construct the content of which is determined by the content of the word contained in the title of the post. Additionally, because some of the topics do overlap this question also relates to construct validity, because with overlap between topics there is construct contamination thus suggesting a lack of construct validity. 

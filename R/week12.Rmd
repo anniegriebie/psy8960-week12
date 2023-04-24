@@ -96,20 +96,28 @@ tokenize = myTokenizer
 ```
 
 #Tuning an LDA model (topic extraction) (Done)
-
-```{r}
-library(topicmodels)
-library(ldatuning)
-library(Rmpfr)
-```
-
-
-#will not run, R session terminates with a fatal error
+#will not run, R session terminates with a fatal error when including "Griffiths2004" model so removed in order to complete assignment questions
 ```{r lda}
 local_cluster <- makeCluster(7)
 registerDoParallel(local_cluster)
+tuning<- FindTopicsNumber(
+  io_dtm,
+  topics = seq(2, 15, 1),
+  metrics = c(
+              "CaoJuan2009",
+              "Arun2010",
+              "Deveaud2014"),
+  control = list(seed = 424),
+  verbose =T
+)
+FindTopicsNumber_plot(tuning)
+stopCluster(local_cluster)
+registerDoSEQ
 ```
-```{r lda}
+## This is the correct LDA model with the "Griffiths2004" metric included, only included as a comment because with it included will create fatal error in R session. 
+#{r lda}
+local_cluster <- makeCluster(7)
+registerDoParallel(local_cluster)
 tuning<- FindTopicsNumber(
   io_dtm,
   topics = seq(2, 15, 1),
@@ -117,16 +125,15 @@ tuning<- FindTopicsNumber(
               "CaoJuan2009",
               "Arun2010",
               "Deveaud2014"),
+  control = list(seed = 424),
   verbose =T
 )
 FindTopicsNumber_plot(tuning)
-```
-```{r lda}
 stopCluster(local_cluster)
 registerDoSEQ
-```
+#
 
-#LDA with 9 topics
+#LDA betas with 9 topics
 ```{r}
 lda_results <- LDA(io_dtm, 9)
 
@@ -134,14 +141,18 @@ lda_betas <-tidy(lda_results, matrix="beta") %>%
   group_by(topic) %>%
   top_n(10, beta) %>%
   arrange(topic, -beta)
+```
 
+#LDA gammas
+```{r}
 lda_gammas <- tidy(lda_results, matrix= "gamma") %>%
   group_by(document) %>%
   top_n(1, gamma) %>%
-  mutate(doc_id =as.numeric(document),
-         probability = gamma,
-         original = text) %>%
-  arrange(document)
+  slice(1) %>%
+  ungroup %>%
+  rename(doc_id = document, probability = gamma) %>%
+  arrange(doc_id) %>%
+  mutate(doc_id = as.numeric(doc_id))
 ```
 
 #Creating topics tbl (Not done)
@@ -174,8 +185,9 @@ summary(upvotes_topic)
 ##Visualization
 #creating a wordcloud of io_dtm (I think done)
 ```{r visualization_wordcloud}
-io_wordcloud<- as.matric(io_dtm)
-wordCounts <-colSums(io_wordcloud)
-wordNames <- names(io_wordcloud)
-wordcloud(wordNames, wordCounts, max.words = 50)
+iowordcloud_tbl <- as_tibble(as.matrix(io_dtm))
+wordcounts <-colSums(iowordcloud_tbl)
+wordnames <- names(iowordcloud_tbl)
+wordcloud(wordnames, wordcounts, max.words = 20, scale = c(2, 0.25))
 ```
+#explain results in comments here
